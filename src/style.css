@@ -1,0 +1,40 @@
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#toolbar {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    padding: 10px;
+    width: 100%;
+}
+
+#toolbar .spacer {
+    flex: 1;
+}
+
+#toolbar #status {
+    margin-left: auto;
+    padding-right: 20px;
+    color: white
+}
