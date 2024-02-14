@@ -27,10 +27,10 @@ const VIEW_ANGLE = Math.PI / 2.2;
 const SENSOR_ANGLE = Math.PI / 10;
 
 const MIN_SENSOR_DISTANCE = 25;
-const MAX_SENSOR_DISTANCE = 600;
+const MAX_SENSOR_DISTANCE = 1600;
 const SENSOR_MULTIPLIER = 180;
 const SENSOR_DROPOFF_RATE = 0.07;
-const AMBIENT_LIGHT = 0.05;
+const AMBIENT_LIGHT = 0.04;
 
 export class Vehicle {
   x = 0;
@@ -49,6 +49,9 @@ export class Vehicle {
     right: 0
   }
 
+  angularIlluminanceMode: "gaussian" | "linear" = "gaussian";
+
+  // debug
   leftSensorAngle = 0;
   rightSensorAngle = 0;
 
@@ -120,6 +123,9 @@ export class Vehicle {
     const [leftSensor, rightSensor] = this.getSensorPositions();
 
     let closestDistance = Number.POSITIVE_INFINITY;
+    let closestLeftAngle = Number.POSITIVE_INFINITY;
+    let closestRightAngle = Number.POSITIVE_INFINITY;
+
     lamps.forEach(lamp => {
       const leftDx = lamp.x - leftSensor.x;
       const leftDy = lamp.y - leftSensor.y;
@@ -136,29 +142,46 @@ export class Vehicle {
       const combinedDistance = leftSqDistance + rightSqDistance;
       const avDistance = Math.sqrt(combinedDistance) / 2;
 
-      if (avDistance > MAX_SENSOR_DISTANCE) {
-        return;
-      }
+      if (avDistance < MAX_SENSOR_DISTANCE) {
+        // change intensity according to angle
+        const leftAngle = Math.atan2(leftDy, leftDx);
+        const rightAngle = Math.atan2(rightDy, rightDx);
 
-      // change intensity according to angle
-      let leftAngle = Math.atan2(leftDy, leftDx);
-      let rightAngle = Math.atan2(rightDy, rightDx);
+        const rotatedLeftAngle = leftAngle - this.rotation + SENSOR_ANGLE;
+        const rotatedRightAngle = rightAngle - this.rotation - SENSOR_ANGLE;
 
-      if (avDistance < MIN_SENSOR_DISTANCE) {
-        leftIntensity += 1;
-        rightIntensity += 1;
-      } else {
-        leftIntensity += Math.min(1, Math.max(0, (VIEW_ANGLE - Math.abs(leftAngle - this.rotation + SENSOR_ANGLE)) / VIEW_ANGLE) * leftInverseSqDist * SENSOR_MULTIPLIER);
-        rightIntensity += Math.min(1, Math.max(0, (VIEW_ANGLE - Math.abs(rightAngle - this.rotation - SENSOR_ANGLE)) / VIEW_ANGLE) * rightInverseSqDist * SENSOR_MULTIPLIER);  
-      }
+        const leftAngleBounded = Math.atan2(Math.sin(rotatedLeftAngle), Math.cos(rotatedLeftAngle));
+        const rightAngleBounded = Math.atan2(Math.sin(rotatedRightAngle), Math.cos(rotatedRightAngle));
 
-      if (avDistance < closestDistance) {
-        closestDistance = avDistance;
+        let leftAngularIntensity = 0;
+        let rightAngularIntensity = 0;
 
-        this.leftSensorAngle = leftAngle;
-        this.rightSensorAngle = rightAngle;
+        if (this.angularIlluminanceMode === "linear") {
+          leftAngularIntensity = (VIEW_ANGLE - Math.abs(leftAngleBounded)) / VIEW_ANGLE;
+          rightAngularIntensity = (VIEW_ANGLE - Math.abs(rightAngleBounded)) / VIEW_ANGLE;
+        } else if (this.angularIlluminanceMode === "gaussian") {
+          leftAngularIntensity  = Math.exp(-2 * (leftAngleBounded / VIEW_ANGLE) ** 2);
+          rightAngularIntensity = Math.exp(-2 * (rightAngleBounded / VIEW_ANGLE) ** 2);
+        }
+
+        if (avDistance < MIN_SENSOR_DISTANCE) {
+          leftIntensity += 1;
+          rightIntensity += 1;
+        } else {
+          leftIntensity += Math.min(1, Math.max(0, leftAngularIntensity * leftInverseSqDist * SENSOR_MULTIPLIER));
+          rightIntensity += Math.min(1, Math.max(0, rightAngularIntensity * rightInverseSqDist * SENSOR_MULTIPLIER));  
+        }
+
+        if (avDistance < closestDistance && leftAngularIntensity > 0 && rightAngularIntensity > 0) {
+          closestDistance = avDistance;
+          closestLeftAngle = leftAngle;
+          closestRightAngle = rightAngle;
+        }
       }
     });
+
+    this.leftSensorAngle = closestLeftAngle;
+    this.rightSensorAngle = closestRightAngle;
 
     this.sensors.left = Math.min(1, Math.max(AMBIENT_LIGHT, leftIntensity));
     this.sensors.right = Math.min(1, Math.max(AMBIENT_LIGHT, rightIntensity));
@@ -238,7 +261,6 @@ export class Vehicle {
 
     this.drawSensors(ctx);
     //this.drawSensorDebug(ctx);
-
   }
 
   drawSensors(ctx: CanvasRenderingContext2D) {
@@ -273,7 +295,7 @@ export class Vehicle {
 
       ctx.restore();
 
-
+      /*
       const directionIndicatorSize = sensorRadius * 1.2;
       ctx.strokeStyle = `rgba(10, 255, 200, ${opacity + 0.5})`;
       ctx.lineWidth = 2;
@@ -283,6 +305,7 @@ export class Vehicle {
       ctx.moveTo(x, y);
       ctx.lineTo(x + Math.cos(angle - VIEW_ANGLE + angleOffset) * directionIndicatorSize, y + Math.sin(angle - VIEW_ANGLE + angleOffset) * directionIndicatorSize);
       ctx.stroke();
+      */
     });
   }
 
@@ -309,7 +332,7 @@ export class Vehicle {
       ctx.strokeStyle = `rgba(255, 255, 0, ${opacity + 0.5})`;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.lineTo(x + Math.cos(objectAngle) * 100, y + Math.sin(objectAngle) * 100);
+      ctx.lineTo(x + Math.cos(objectAngle) * 100 * opacity, y + Math.sin(objectAngle) * 100 * opacity);
       ctx.moveTo(x, y);
       ctx.stroke();
     });

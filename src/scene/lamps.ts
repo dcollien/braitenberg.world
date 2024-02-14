@@ -73,6 +73,8 @@ export class Lamps {
   }
 
   forEach(callback: (lamp: Lamp) => void) {
-    this.lamps.forEach(callback);
+    for (const lamp of this.lamps) {
+      callback(lamp);
+    }
   }
 }
