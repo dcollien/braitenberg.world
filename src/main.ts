@@ -8,8 +8,7 @@ _
 |_) ._ _. o _|_  _  ._  |_   _  ._ _          _  ._ |  _|
 |_) | (_| |  |_ (/_ | | |_) (/_ | (_| o \/\/ (_) |  | (_|
                                    _|                    
-By David Collien
-(mе@dсоllіеո.com)
+https://github.com/dcollien/braitenberg.world
 `, "font-family:monospace; color:#00ffff; font-size: 12px;");
 
 const DRIVER = new KeyboardAgent();
@@ -33,7 +32,7 @@ const AGENTS = [
   {
     "name": "Explorer",
     "type": "curiosity",
-    "agent": new BraitenbergAgent("explore", 220)
+    "agent": new BraitenbergAgent("curiosity", 220)
   },
   {
     "name": "Drive with Keyboard",
@@ -95,9 +94,46 @@ const init = () => {
 
     DRIVER.onKeyDown(event)
   });
+
   window.addEventListener("keyup", (event) => DRIVER.onKeyUp(event));
+  window.addEventListener("wheel", (event) => {
+    simulation.setZoom(simulation.zoom + event.deltaY * -0.001);
+  });
+
+  canvas.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+
+  canvas.addEventListener("mousedown", (event) => {
+    // if right drag
+    if (event.button === 2) {
+      simulation.pan.isPanning = true;
+      event.preventDefault();
+    }
+  });
+
+  canvas.addEventListener("mouseout", () => {
+    simulation.pan.isPanning = false;
+  });
+
+  window.addEventListener("mouseup", () => {
+    simulation.pan.isPanning = false;
+  });
+
+  window.addEventListener("mousemove", (event) => {
+    if (simulation.pan.isPanning) {
+      simulation.pan.x -= event.movementX / simulation.zoom;
+      simulation.pan.y -= event.movementY / simulation.zoom;
+      simulation.repaint = true;
+    }
+  });
+
+  if (canvas.width < 800) {
+    simulation.zoom = 0.5;
+  }
 
   simulation.run();
 };
 
 window.addEventListener("load", init);
+document.getElementById("github")?.style.setProperty("display", "block");

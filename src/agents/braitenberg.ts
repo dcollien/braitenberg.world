@@ -1,7 +1,7 @@
 import { Vehicle } from "../scene/vehicle";
 import { Agent } from "./agent";
 
-export type BraitenbergConfiguration = "fear" | "explore" | "aggression" | "love";
+export type BraitenbergConfiguration = "fear" | "curiosity" | "aggression" | "love";
 
 const MAX_SPEED = 300;
 const MIN_SPEED = 0.001;
@@ -40,7 +40,7 @@ export class BraitenbergAgent extends Agent {
       // = -
       targetLeftSpeed  = this.maxSpeed - leftIntensity * this.maxSpeed;
       targetRightSpeed = this.maxSpeed - rightIntensity * this.maxSpeed;
-    } else if (this.configuration === "explore") {
+    } else if (this.configuration === "curiosity") {
       // X -
       targetLeftSpeed = this.maxSpeed - rightIntensity * this.maxSpeed;
       targetRightSpeed = this.maxSpeed - leftIntensity * this.maxSpeed;
@@ -150,7 +150,7 @@ export class BraitenbergAgent extends Agent {
       drawParallel(bgColor, bgColor);
       drawParallel(leftColorNeg, rightColorNeg);
       drawNegative();
-    } else if (this.configuration === "explore") {
+    } else if (this.configuration === "curiosity") {
       drawCrossover(bgColor, bgColor);
       drawCrossover(leftColorNeg, rightColorNeg);
       drawNegative();

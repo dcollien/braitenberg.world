@@ -15,7 +15,7 @@ export function uiToolbar({ agents, onAgentChange }: ToolbarProps): [HTMLDivElem
 
   const status = document.createElement("div");
   status.id = "status";
-  status.innerHTML = "Click on the grid to place and remove lamps. Press ESC to reset the vehicle position. Use arrow keys to drive the vehicle.";
+  status.innerHTML = "Click on the grid to place and remove lamps. Press ESC to reset the vehicle position. Use arrow keys to drive the vehicle. Scroll to zoom.";
 
   const select = document.createElement("select");
   select.id = "agent";
