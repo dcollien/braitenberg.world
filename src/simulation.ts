@@ -26,7 +26,7 @@ export class Simulation extends AnimationLoop {
   agent: Agent;
 
   zoom: number = 1;
-  pan: { x: number; y: number, isPanning: boolean } = { x: 0, y: 0, isPanning: true };
+  pan: { x: number; y: number, isPanning: boolean } = { x: 0, y: 0, isPanning: false };
 
   constructor(canvas: HTMLCanvasElement, agent: Agent) {
     super(canvas);
