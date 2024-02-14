@@ -8,7 +8,7 @@ import { Camera } from "./scene/camera";
 import { Agent } from "./agents/agent";
 import { Lamps } from "./scene/lamps";
 
-const BACKGROUND_COLOR = document.body.style.backgroundColor || "#222222";
+const BACKGROUND_COLOR = "#222222";
 const MAX_ZOOM = 2;
 const MIN_ZOOM = 0.25;
 const PAN_RESET_SPEED = 0.8;
