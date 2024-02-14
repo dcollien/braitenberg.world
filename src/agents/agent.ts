@@ -1,7 +1,7 @@
 import { Vehicle } from "../scene/vehicle";
 
 export class Agent {
-  update(_dt: number, _vehicle: Vehicle, _lamps: { x: number; y: number; }[] = []) {
+  update(_dt: number, _vehicle: Vehicle) {
     return false;
   }
 

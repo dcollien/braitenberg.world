@@ -59,7 +59,7 @@ export class Simulation extends AnimationLoop {
 
     const updates = [
       this.repaint,
-      this.agent.update(dt, this.vehicle, this.lamps.lamps),
+      this.agent.update(dt, this.vehicle),
       this.vehicle.update(dt, this.world, this.breadcrumbs),
       this.breadcrumbs.update(dt, this.vehicle),
       this.camera.update(dt, this.vehicle, this.dimensions, this.pan, this.zoom),
