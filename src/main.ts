@@ -78,7 +78,7 @@ const init = () => {
   canvas.addEventListener("click", (event) => {
     const { offsetX, offsetY } = event;
 
-    const { x: gridX, y: gridY } = simulation.world.toGrid(offsetX - simulation.dimensions.width / 2 + simulation.camera.x, offsetY - simulation.dimensions.height / 2  + simulation.camera.y);
+    const { x: gridX, y: gridY } = simulation.world.toGrid((offsetX - simulation.dimensions.width / 2 + simulation.camera.x) / simulation.zoom, (offsetY - simulation.dimensions.height / 2  + simulation.camera.y) / simulation.zoom);
     const { x, y } = simulation.world.fromGrid(gridX, gridY)
 
     simulation.lamps.toggle(x, y);
