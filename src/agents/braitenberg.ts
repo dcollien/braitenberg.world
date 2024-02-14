@@ -4,14 +4,14 @@ import { Agent } from "./agent";
 export type BraitenbergConfiguration = "fear" | "curiosity" | "aggression" | "love";
 
 const MAX_SPEED = 300;
-const MIN_SPEED = 0.001;
+const MIN_SPEED_DELTA = 0.01;
 
 export class BraitenbergAgent extends Agent {
   configuration: BraitenbergConfiguration;
   maxSpeed: number;
   minSpeed: number;
 
-  constructor(configuration: BraitenbergConfiguration, maxSpeed: number = MAX_SPEED, minSpeed: number = MIN_SPEED) {
+  constructor(configuration: BraitenbergConfiguration, maxSpeed: number = MAX_SPEED, minSpeed: number = 0) {
     super();
     this.configuration = configuration;
     this.maxSpeed = maxSpeed;
@@ -55,10 +55,25 @@ export class BraitenbergAgent extends Agent {
     if (vehicle.rightSpeed > this.maxSpeed) vehicle.rightSpeed = this.maxSpeed;
     if (vehicle.rightSpeed < -this.maxSpeed) vehicle.rightSpeed = -this.maxSpeed;
 
-    // if vehicle speed is almost 0, set it to 0
-    if (Math.abs(vehicle.leftSpeed) < this.minSpeed) vehicle.leftSpeed = 0;
-    if (Math.abs(vehicle.rightSpeed) < this.minSpeed) vehicle.rightSpeed = 0;
+    const leftSign = Math.sign(vehicle.leftSpeed);
+    const rightSign = Math.sign(vehicle.rightSpeed);
 
+    // if vehicle speed is almost the minimum, set it to the minimum
+    const vehicleSpeed = Math.max(Math.abs(vehicle.leftSpeed), Math.abs(vehicle.rightSpeed));
+    if (vehicleSpeed < this.minSpeed + MIN_SPEED_DELTA) {
+      if (this.minSpeed === 0) {
+        vehicle.leftSpeed = 0;
+        vehicle.rightSpeed = 0;
+      } else {
+        // the larger of the two speeds will be set to the minimum
+        // this is to force turning and prevent the vehicle from getting stuck
+        if (Math.abs(vehicle.leftSpeed) > Math.abs(vehicle.rightSpeed)) {
+          vehicle.leftSpeed = this.minSpeed * leftSign;
+        } else {
+          vehicle.rightSpeed = this.minSpeed * rightSign;
+        }
+      }
+    }
 
     return prevLeftSpeed !== vehicle.leftSpeed || prevRightSpeed !== vehicle.rightSpeed;
   }
@@ -122,38 +137,48 @@ export class BraitenbergAgent extends Agent {
       ctx.stroke();
     }
 
-    const drawPositive = () => {
-      ctx.fillStyle = "rgba(0, 100, 0, 0.8)";
+    const drawPositive = (lColor: string, rColor: string) => {
       // write + symbol in text
       ctx.font = "bold 12px Arial";
+      ctx.fillStyle = lColor;
+
       ctx.fillText("+", leftMargin - 6, bottomMargin + 12);
+      
+      ctx.fillStyle = rColor;
       ctx.fillText("+", rightMargin, bottomMargin + 12);
     }
 
-    const drawNegative = () => {
-      ctx.fillStyle = "rgba(100, 0, 0, 0.8)";
+    const drawNegative = (lColor: string, rColor: string) => {
       // write - symbol in text
       ctx.font = "bold 12px Arial";
+      
+      ctx.fillStyle = lColor;
       ctx.fillText("-", leftMargin - 6, bottomMargin + 12);
+
+      ctx.fillStyle = rColor;
       ctx.fillText("-", rightMargin, bottomMargin + 12);
     }
 
     if (this.configuration === "fear") {
       drawParallel(bgColor, bgColor);
       drawParallel(leftColorPos, rightColorPos);
-      drawPositive();
+      drawPositive(bgColor, bgColor);
+      drawPositive(leftColorPos, rightColorPos);
     } else if (this.configuration === "aggression") {
       drawCrossover(bgColor, bgColor);
       drawCrossover(leftColorPos, rightColorPos);
-      drawPositive();
+      drawPositive(bgColor, bgColor);
+      drawPositive(rightColorPos, leftColorPos);
     } else if (this.configuration === "love") {
       drawParallel(bgColor, bgColor);
       drawParallel(leftColorNeg, rightColorNeg);
-      drawNegative();
+      drawNegative(bgColor, bgColor);
+      drawNegative(leftColorNeg, rightColorNeg);
     } else if (this.configuration === "curiosity") {
       drawCrossover(bgColor, bgColor);
       drawCrossover(leftColorNeg, rightColorNeg);
-      drawNegative();
+      drawNegative(bgColor, bgColor);
+      drawNegative(rightColorNeg, leftColorNeg);
     }
     
     ctx.restore();

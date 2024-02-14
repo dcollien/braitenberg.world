@@ -32,7 +32,7 @@ const AGENTS = [
   {
     "name": "Explorer",
     "type": "curiosity",
-    "agent": new BraitenbergAgent("curiosity", 220)
+    "agent": new BraitenbergAgent("curiosity", 220, 3)
   },
   {
     "name": "Drive with Keyboard",
